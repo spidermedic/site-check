@@ -47,16 +47,16 @@ def sendmail(message, site_status):
     msg = MIMEMultipart() 
     
     # setup messge parameters
-    password = "RYR1679dmx"
-    msg['From'] = "checker@n1qa.com"
-    msg['To'] = "dougmartinrn@gmail.com"
+    password = "email-password"
+    msg['From'] = "from@email.com"
+    msg['To'] = "to@email.com"
     msg['Subject'] = site_status
     
     # add in the message body
     msg.attach(MIMEText(message, 'plain'))
     
     #create server
-    server = smtplib.SMTP(host='mail.n1qa.com', port=2525)
+    server = smtplib.SMTP(host='mail-host', port=445)
     
     server.starttls()
     

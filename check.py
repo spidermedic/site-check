@@ -1,53 +1,72 @@
 #!/usr/bin/python
 
-""" Check list of sites and send status via SMS"""
+""" Check list of sites and send status via email"""
 import sys
-from datetime import datetime
+import smtplib
 import requests
-from twilio.rest import Client
+from datetime import datetime
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 
 def main():
     """ main function"""
 
     #init variables
-    error_flag = False
-    message = "- - - - \n\n" + datetime.now().strftime('%d-%m-%Y (%H:%M)') + "\n\n"
-
-    # init twilio account
-    account_sid = ACCOUNT_ID
-    auth_token = AUTH_TOKEN
-    client = Client(account_sid, auth_token)
-
-    # check args
-    if len(sys.argv) != 2:
-        sys.exit("Usage: check all|down")
+    site_status = "All Sites Working"
+    message = datetime.now().strftime('%d-%m-%Y (%H:%M)') + "\n\n"
 
     # open the list of sites
     try:
-        with open("/home/pi/sitecheck/sites.txt", "r") as rows:
-            # get each line and request http header
+        with open("sites.txt", "r") as rows:
+        # get each line and request http header
             for url in rows:
+                print(url)
                 if url[0] != "#":
                     url = url.strip()
-                    r = requests.head("http://" + url)
+                    try:
+                        r = requests.head("https://" + url)
+                        message += f"{url} - [{str(r.status_code)}] \n"
+                    except:
+                        message += f"{url} - Timed out\n"
+                        site_status = "Problem Detected"
 
                 # if the status_code shows error code and url to message
                 if r.status_code > 302:
-                    error_flag = True
-                    message = message + "[" + str(r.status_code) + "] " + url + "\n"
-            
+                    site_status = "Problem Detected"
     except:
-        print("Error: Unable to load sites.txt")
+        print("Error accessing sites.txt")
 
-    if not error_flag:
-        message = message + "All sites working"
+    sendmail(message,site_status)
 
-    # send status of all or down site via twilio
-    if sys.argv[1] == 'all' or error_flag == True:
-        client.api.account.messages.create(
-            to=DESINATION_NUMBER,
-            from_=TWILIO_NUMBER,
-            body=message)
+
+def sendmail(message, site_status):
+    """Sends site status to specified email address"""
+
+    # create message object instance
+    msg = MIMEMultipart() 
+    
+    # setup messge parameters
+    password = "RYR1679dmx"
+    msg['From'] = "checker@n1qa.com"
+    msg['To'] = "dougmartinrn@gmail.com"
+    msg['Subject'] = site_status
+    
+    # add in the message body
+    msg.attach(MIMEText(message, 'plain'))
+    
+    #create server
+    server = smtplib.SMTP(host='mail.n1qa.com', port=2525)
+    
+    server.starttls()
+    
+    # Login Credentials for sending the mail
+    server.login(msg['From'], password) 
+    
+    # send the message via the server.
+    server.sendmail(msg['From'], msg['To'], msg.as_string())
+    
+    server.quit()
 
 
 if __name__ == "__main__":
