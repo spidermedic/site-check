@@ -19,7 +19,7 @@ def main():
     # open the list of sites
     try:
         with open("sites.txt", "r") as rows:
-        # get each line and request http header
+        # with each line request the http header
             for url in rows:
                 print(url)
                 if url[0] != "#":
@@ -31,7 +31,7 @@ def main():
                         message += f"{url} - Timed out\n"
                         site_status = "Problem Detected"
 
-                # if the status_code shows error code and url to message
+                # if the status_code shows error, update the site_status variable
                 if r.status_code > 302:
                     site_status = "Problem Detected"
     except:
@@ -47,16 +47,16 @@ def sendmail(message, site_status):
     msg = MIMEMultipart() 
     
     # setup messge parameters
-    password = "email-password"
-    msg['From'] = "from@email.com"
-    msg['To'] = "to@email.com"
+    password = "email-password"    # Sending email account's password
+    msg['From'] = "from@email.com" # Sending account email address
+    msg['To'] = "to@email.com"     # Email address where you want the alert to go
     msg['Subject'] = site_status
     
     # add in the message body
     msg.attach(MIMEText(message, 'plain'))
     
     #create server
-    server = smtplib.SMTP(host='mail-host', port=445)
+    server = smtplib.SMTP(host='email-host', port=445) # Sending account's host and port information
     
     server.starttls()
     
