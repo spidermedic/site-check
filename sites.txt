@@ -1,7 +1,4 @@
-newenglandmca.com
-nemcavermont.com
-newenglandmca.net
-newenglandmca.org
-newenglandmca.info
-newenglandthc.com
-amrcb.com
+# This is a list of urls to check. There should be one site per line. 
+https://google.com
+https://yahoo.com
+https://reddit.com
